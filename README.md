@@ -1,2 +1,2 @@
 # network
-学位socket编程
+学习socket编程
