@@ -18,9 +18,9 @@
 #define CLI_NUM 3
 
 int client_fds[CLI_NUM];
+
 int main(int agrc,char **argv) {
-    int ser_souck_fd;
-    int i;
+    int listen_sock_fd;
     char input_message[BUFF_SIZE];
     char resv_message[BUFF_SIZE];
 
@@ -28,15 +28,15 @@ int main(int agrc,char **argv) {
     ser_addr.sin_family= AF_INET;    //IPV4
     ser_addr.sin_port = htons(ser_port);
     ser_addr.sin_addr.s_addr = INADDR_ANY;  //指定的是所有地址
-    if( (ser_souck_fd = socket(AF_INET,SOCK_STREAM,0)) < 0 ) {
+    if( (listen_sock_fd = socket(AF_INET,SOCK_STREAM,0)) < 0 ) {
         perror("creat failure");
         return -1;
     }
-    if(bind(ser_souck_fd, (const struct sockaddr *)&ser_addr,sizeof(ser_addr)) < 0) {
+    if(bind(listen_sock_fd, (const struct sockaddr *)&ser_addr,sizeof(ser_addr)) < 0) {
         perror("bind failure");
         return -1;
     }
-    if(listen(ser_souck_fd, backlog) < 0) {
+    if(listen(listen_sock_fd, backlog) < 0) {
         perror("listen failure");
         return -1;
     }
@@ -55,9 +55,9 @@ int main(int agrc,char **argv) {
             max_fd=0;
         }
         //add serverce
-        FD_SET(ser_souck_fd,&ser_fdset);
-        if(max_fd < ser_souck_fd) {
-            max_fd = ser_souck_fd;
+        FD_SET(listen_sock_fd,&ser_fdset);
+        if(max_fd < listen_sock_fd) {
+            max_fd = listen_sock_fd;
         }
         for(i=0;i<CLI_NUM;i++) {
             if(client_fds[i]!=0) {
@@ -87,10 +87,10 @@ int main(int agrc,char **argv) {
                     }
                 }
             }
-            if(FD_ISSET(ser_souck_fd, &ser_fdset)) {
+            if(FD_ISSET(listen_sock_fd, &ser_fdset)) {
                 struct sockaddr_in client_address;
                 socklen_t address_len;
-                int client_sock_fd = accept(ser_souck_fd,(struct sockaddr *)&client_address, &address_len);
+                int client_sock_fd = accept(listen_sock_fd,(struct sockaddr *)&client_address, &address_len);
                 if(client_sock_fd > 0) {
                     int flags=-1;
                     //一个客户端到来分配一个fd，CLI_NUM=3，则最多只能有三个客户端，超过4以后跳出for循环，flags重新被赋值为-1
@@ -112,8 +112,7 @@ int main(int agrc,char **argv) {
                 }
             }
         }
-        // deal with the message
-        for(i=0; i<CLI_NUM; i++) {
+        for(int32_t i=0; i<CLI_NUM; i++) {
             if(client_fds[i] != 0) {
                 if(FD_ISSET(client_fds[i],&ser_fdset)) {
                     bzero(resv_message,BUFF_SIZE);

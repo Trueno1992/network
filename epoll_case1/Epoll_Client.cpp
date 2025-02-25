@@ -12,7 +12,7 @@
 #include <iostream>
 
 #define MAXSIZE 1024
-#define IP_ADDR "127.0.0.1"
+#define IP_ADDR "10.2.20.10"
 #define IP_PORT 8888
 
 using namespace std;

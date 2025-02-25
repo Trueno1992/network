@@ -7,10 +7,11 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <ctype.h>
+#include <arpa/inet.h>
 #include <sys/epoll.h>  //epoll头文件
 
 #define MAXSIZE 10
-#define IP_ADDR "127.0.0.1"
+#define IP_ADDR "10.2.20.10"
 #define IP_PORT 8888
 #include<iostream>
 using namespace std;
@@ -33,7 +34,9 @@ int main()
 
     memset(&st_sersock, 0, sizeof(st_sersock));
     st_sersock.sin_family = AF_INET;  //IPv4协议
-    st_sersock.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY转换过来就是0.0.0.0，泛指本机的意思，也就是表示本机的所有IP，因为有些机子不止一块网卡，多网卡的情况下，这个就表示所有网卡ip地址的意思。
+    //st_sersock.sin_addr.s_addr = htonl(INADDR_ANY);
+    inet_pton(AF_INET, IP_ADDR, &st_sersock.sin_addr);
+    //INADDR_ANY转换过来就是0.0.0.0，泛指本机的意思，也就是表示本机的所有IP，因为有些机子不止一块网卡，多网卡的情况下，这个就表示所有网卡ip地址的意思。
     st_sersock.sin_port = htons(IP_PORT);
 
     if(bind(i_listenfd,(struct sockaddr*)&st_sersock, sizeof(st_sersock)) < 0) //将套接字绑定IP和端口用于监听
